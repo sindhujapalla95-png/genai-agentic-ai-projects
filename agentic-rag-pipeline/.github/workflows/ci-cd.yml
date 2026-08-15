@@ -1,0 +1,49 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff
+
+      - name: Lint
+        run: ruff check src tests
+
+      - name: Run unit tests
+        run: pytest -v --maxfail=1
+
+  build-and-push-image:
+    needs: lint-and-test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        run: docker build -t agentic-rag-pipeline:${{ github.sha }} .
+
+      # Zero-downtime style release: build once, tag immutably, then
+      # promote the same artifact through environments (dev -> qa -> prod).
+      - name: Tag release image
+        run: docker tag agentic-rag-pipeline:${{ github.sha }} agentic-rag-pipeline:latest
