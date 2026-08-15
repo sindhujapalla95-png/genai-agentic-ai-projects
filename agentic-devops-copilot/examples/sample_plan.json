@@ -1,0 +1,37 @@
+{
+  "resource_changes": [
+    {
+      "address": "azurerm_network_security_rule.allow_all_inbound",
+      "type": "azurerm_network_security_rule",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "source_address_prefix": "0.0.0.0/0",
+          "destination_port_range": "*",
+          "access": "Allow"
+        }
+      }
+    },
+    {
+      "address": "azurerm_storage_account.data_lake",
+      "type": "azurerm_storage_account",
+      "change": {
+        "actions": ["update"],
+        "after": {
+          "allow_blob_public_access": true,
+          "account_replication_type": "LRS"
+        }
+      }
+    },
+    {
+      "address": "azurerm_databricks_workspace.analytics",
+      "type": "azurerm_databricks_workspace",
+      "change": {
+        "actions": ["create"],
+        "after": {
+          "sku": "premium"
+        }
+      }
+    }
+  ]
+}
